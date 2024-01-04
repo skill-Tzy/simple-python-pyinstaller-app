@@ -14,7 +14,11 @@ node {
             junit 'test-reports/results.xml'
         }
 
-        stage('Deliver') {
+        stage('Manual Approval') {
+            input message: 'Lanjutkan ke tahap Deploy? (Klik "Proceed" untuk mengakhiri)'
+        }
+
+        stage('Deploy') {
             withEnv(["VOLUME=" + pwd() + "/sources:/src", "IMAGE=cdrx/pyinstaller-linux:python2"]) {
                 dir(env.BUILD_ID) {
                     unstash(name: 'compiled-results')
@@ -23,6 +27,7 @@ node {
                 archiveArtifacts "sources/dist/add2vals"
                 sh "docker run --rm -v ${VOLUME} ${IMAGE} 'rm -rf build dist'"
             }
+            sleep 60
         }
     } catch (Exception e) {
         // Handle exceptions or errors here
